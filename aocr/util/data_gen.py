@@ -37,7 +37,7 @@ class DataGen(object):
         self.bucket_specs = buckets
         self.bucket_data = BucketData()
 
-        dataset = tf.contrib.data.TFRecordDataset([annotation_fn])
+        dataset = tf.data.TFRecordDataset([annotation_fn])
         dataset = dataset.map(self._parse_record)
         dataset = dataset.shuffle(buffer_size=10000)
         self.dataset = dataset.repeat(self.epochs)
