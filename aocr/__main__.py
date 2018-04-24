@@ -18,7 +18,7 @@ from .util import dataset
 from .util.data_gen import DataGen
 from .util.export import Exporter
 
-tf.logging.set_verbosity(tf.logging.ERROR)
+tf.logging.set_verbosity(tf.logging.INFO)
 
 
 def process_args(args, defaults):
@@ -193,6 +193,14 @@ def process_args(args, defaults):
                                            help='Predict text from files (feed through stdin).')
     parser_predict.set_defaults(phase='predict', steps_per_checkpoint=0, batch_size=1)
 
+
+    #Recognize
+    parser_recognize = subparsers.add_parser('recognize', parents=[parser_base, parser_model],
+                                           help='recognize text from files (feed through stdin).')
+    parser_recognize.set_defaults(phase='recognize', steps_per_checkpoint=0, batch_size=1)
+    parser_recognize.add_argument('--imagefile', metavar='recognize',dest='imagepath',
+                                type=str,
+                                help=('path to the image file'))
     parameters = parser.parse_args(args)
     return parameters
 
@@ -270,6 +278,15 @@ def main(args=None):
             exporter = Exporter(parameters.model_dir, model)
             exporter.save(parameters.export_path, parameters.format)
             return
+        elif parameters.phase == 'recognize':
+            filename = parameters.imagepath
+            try:
+                with open(filename, 'rb') as img_file:
+                    img_file_data = img_file.read()
+            except IOError:
+                print('result: err opening file', filename)
+            text, probability = model.predict(img_file_data)
+            print('result: ok', '{:.2f}'.format(probability), text)
         else:
             raise NotImplementedError
 
